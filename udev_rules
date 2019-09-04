@@ -1,0 +1,33 @@
+#!bin/bash
+t1=$0
+
+if [ -z "$t1" ]
+then
+        echo "No device Id. Exiting..."
+        exit 1
+fi
+
+#Get the vendor Id
+vendorId=$(lsusb | awk -v p=$3 '$0~p {print $6; exit}'| cut -d':' -f1)
+
+#Get the product Id
+productId=$(lsusb | awk -v p=$3 '$0~p {print $6; exit}'| cut -d':' -f2)
+
+#Check if there is a device with proper vendor and product IDs before continuing.
+if [ -z "$vendorId" ]
+then
+        echo "Vendor Id not found."
+        echo "Exiting..."
+        exit 1
+elif [ -z "$productId" ]
+then
+        echo "Product Id not found"
+        echo "Exiting..."
+else
+        echo "Backing up current android rules file."
+        cp /etc/udev/rules.d/51-android-usb.rules /etc/udev/rules.d/bkp
+        echo "Clearing existing file."
+        : > /etc/udev/rules.d/51-android-usb.rules
+        echo "Writing new rules."
+        echo SUBSYSTEM=="usb", ATTR{idVendor}==\"$vendorId\", ATTR{idProduct}==\"$productId\", MODE="0666", GROUP="plugdev" > /etc/udev/rules.d/51-android-usb.rules
+        fi
