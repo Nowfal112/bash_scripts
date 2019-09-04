@@ -1,0 +1,15 @@
+prc=$(lsof | awk -v p=$1 '$0~p {print $1; exit}')
+
+if [ -z "$prc" ]; then
+        echo "No process found."
+        echo "Aborting..."
+        exit 1
+fi
+echo "Kill $prc ?"
+read -p "[y/n]: "  yn
+if [ $yn = "y" ]; then
+        echo "Killing..."
+        kill -9 $(lsof | awk -v p=$1 '$0~p {print $2; exit}')
+else
+        echo "Aborting..."
+fi
